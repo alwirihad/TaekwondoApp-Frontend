@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scan QR Peserta</title>
+
+  <!-- SB Admin 2 CSS -->
+  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Library QR Scanner -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+        <div class="sidebar-brand-icon rotate-n-15">
+          <i class="fas fa-fist-raised"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Taekwondo</div>
+      </a>
+
+      <hr class="sidebar-divider my-0">
+
+      <li class="nav-item">
+        <a class="nav-link" href="index.html">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="bagan.html">
+          <i class="fas fa-fw fa-sitemap"></i>
+          <span>Bagan Pertandingan</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="peserta.html">
+          <i class="fas fa-fw fa-users"></i>
+          <span>Daftar Peserta</span>
+        </a>
+      </li>
+
+      <li class="nav-item active">
+        <a class="nav-link" href="scan.html">
+          <i class="fas fa-qrcode"></i>
+          <span>Scan QR</span>
+        </a>
+      </li>
+
+      <hr class="sidebar-divider d-none d-md-block">
+
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+          <h5 class="m-0 font-weight-bold text-primary">Scan QR Peserta</h5>
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+          <ul class="navbar-nav ml-auto">
+            <!-- User Info -->
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+              </a>
+              <div class="dropdown-menu dropdown-menu-right shadow">
+                <a class="dropdown-item" href="login.html">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout
+                </a>
+              </div>
+            </li>
+          </ul>
+        </nav>
+        <!-- End Topbar -->
+
+        <!-- Main Content -->
+        <div class="container-fluid text-center">
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <!-- Kotak kamera -->
+              <div id="reader" style="width: 350px; margin:auto;"></div>
+              <hr>
+              <h6>Hasil Scan:</h6>
+              <button id="scanAgain" class="btn btn-primary mt-3" style="display:none;">Scan Lagi</button>
+              <p id="result" class="font-weight-bold text-primary"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Content Wrapper -->
+  </div>
+  <!-- End Page Wrapper -->
+
+  <!-- Bootstrap -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="js/sb-admin-2.min.js"></script>
+
+  <!-- Script QR Code -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script type="module">
+import {BASE_URL} from "./js/config.js"
+  const token = localStorage.getItem("token");
+let html5QrcodeScanner;
+
+function onScanSuccess(decodedText) {
+  // stop dulu supaya tidak spam
+  html5QrcodeScanner.clear().then(() => {
+    console.log("Scanner stopped");
+  }).catch(err => console.log(err));
+
+  document.getElementById("result").textContent = decodedText;
+
+  fetch(`${BASE_URL}/api/peserta/scan`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ qrToken: decodedText })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      alert("Error: " + data.error);
+    } else {
+      alert(data.message);
+      document.getElementById("result").textContent =
+        `Peserta: ${data.peserta.nama} - Status: ${data.peserta.status}`;
+    }
+    // tampilkan tombol scan lagi
+    document.getElementById("scanAgain").style.display = "inline-block";
+  })
+  .catch(err => console.error("Error:", err));
+}
+
+html5QrcodeScanner = new Html5QrcodeScanner(
+  "reader",
+  { fps: 10, qrbox: 250 },
+  false
+);
+html5QrcodeScanner.render(onScanSuccess);
+
+// tombol scan lagi
+document.getElementById("scanAgain").addEventListener("click", () => {
+  document.getElementById("scanAgain").style.display = "none";
+  html5QrcodeScanner.render(onScanSuccess);
+});
+
+</script>
+
+</body>
+
+</html>

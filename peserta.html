@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Peserta</title>
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+<body id="page-top">
+<div id="wrapper">
+
+  <!-- Sidebar -->
+  <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+      <div class="sidebar-brand-icon rotate-n-15">
+        <i class="fas fa-fist-raised"></i>
+      </div>
+      <div class="sidebar-brand-text mx-3">Taekwondo</div>
+    </a>
+    <hr class="sidebar-divider my-0">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-fw fa-tachometer-alt"></i> Dashboard</a></li>
+    <li class="nav-item"><a class="nav-link" href="bagan.html"><i class="fas fa-fw fa-sitemap"></i> Bagan Pertandingan</a></li>
+    <li class="nav-item active"><a class="nav-link" href="peserta.html"><i class="fas fa-fw fa-users"></i> Daftar Peserta</a></li>
+    <li class="nav-item"><a class="nav-link" href="scan.html"><i class="fas fa-qrcode"></i> Scan QR</a></li>
+  </ul>
+
+  <!-- Content -->
+  <div id="content-wrapper" class="d-flex flex-column">
+    <div id="content">
+
+      <!-- Top Bar -->
+      <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+        <h5 class="ml-2 my-auto">Daftar Peserta</h5>
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+          <ul class="navbar-nav ml-auto">
+            <!-- User Info -->
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+              </a>
+              <div class="dropdown-menu dropdown-menu-right shadow">
+                <a class="dropdown-item" href="login.html">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout
+                </a>
+              </div>
+            </li>
+          </ul>
+        </nav>
+
+      <div class="container-fluid">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <input id="searchInput" class="form-control" placeholder="Cari nama / klub">
+          </div>
+          <div class="col-md-4">
+            <select id="kelasFilter" class="form-control">
+              <option value="">Semua Kelas</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <select id="kategoriFilter" class="form-control"></select>
+              <option value="">Semua Kategori</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#tambahModal">
+          <i class="fas fa-plus"></i> Tambah Peserta
+        </button>
+
+        <div class="card shadow mb-4">
+          <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Tabel Peserta</h6></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>No</th><th>No Partai</th><th>Nama</th><th>Klub</th><th>Jenis Kelamin</th><th>Kategori</th><th>Kelas</th>
+                    <th>Tinggi</th><th>Berat</th><th>Status</th><th>QR</th><th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="dataPeserta"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pagination" class="mt-3 text-center"></div>
+      <!-- Modal Tambah -->
+      <div class="modal fade" id="tambahModal">
+        <div class="modal-dialog">
+          <form id="formTambah" class="modal-content">
+            <div class="modal-header"><h5>Tambah Peserta</h5></div>
+            <div class="modal-body">
+              <input class="form-control mb-2" name="nama" placeholder="Nama" required>
+              <input class="form-control mb-2" name="klub" placeholder="Klub" required>
+              <input class="form-control mb-2" name="no_partai" placeholder="No Partai" type="number">
+              <select class="form-control mb-2" name="jenis_kelamin" required>
+                <option value="">Jenis Kelamin</option>
+                <option>Putra</option><option>Putri</option>
+              </select>
+              <input type="number" name="kategori_id" placeholder="Kategori ID" required />
+              <input type="number" name="kelas_id" placeholder="Kelas ID" />
+              <input type="number" step="0.01" name="berat_badan" placeholder="Berat Badan" />
+              <input type="number" step="0.01" name="tinggi_badan" placeholder="Tinggi Badan" />
+              <input type="number" name="umur" placeholder="Umur" />
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal Edit -->
+      <div class="modal fade" id="editModal">
+        <div class="modal-dialog">
+          <form id="formEdit" class="modal-content">
+            <div class="modal-header"><h5>Edit Peserta</h5></div>
+            <div class="modal-body">
+              <input type="hidden" name="uuid">
+              <input class="form-control mb-2" name="nama" required>
+              <input class="form-control mb-2" name="klub" required>
+              <input class="form-control mb-2" name="no_partai" type="number" placeholder="No Partai">
+              <select class="form-control mb-2" name="jenis_kelamin">
+                <option>Putra</option><option>Putri</option>
+              </select>
+              <input class="form-control mb-2" name="kategori_id"/>
+              <input class="form-control mb-2" name="kelas_id"/>
+              <input class="form-control mb-2" name="tinggi_badan" type="number" step="0.01">
+              <input class="form-control mb-2" name="berat_badan" type="number" step="0.01">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="vendor/jquery/jquery.min.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+import {BASE_URL} from "./js/config.js"
+const API_URL = `${BASE_URL}/api/peserta`;
+let pesertaData = [];
+let currentPage = 1;
+const perPage = 10;
+
+function getToken(){ return localStorage.getItem("token"); }
+function getAuthHeaders(extraHeaders = {}) {
+  const token = getToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    ...extraHeaders
+  };
+}
+
+async function loadPeserta(){
+  try {
+    const res = await fetch(API_URL, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error(await res.text());
+    pesertaData = await res.json();
+    fillFilters();
+    renderTable();
+  } catch(err){
+    console.error("Gagal load peserta:", err);
+    alert("Gagal load peserta");
+  }
+}
+
+function fillFilters(){
+  const kelasSelect = document.getElementById("kelasFilter");
+  kelasSelect.innerHTML = `<option value="">Semua Kelas</option>`;
+  const kelasSet = new Set(pesertaData.map(p=>p.kelas_nama).filter(Boolean));
+  kelasSet.forEach(k=>{
+    kelasSelect.innerHTML += `<option value="${k}">${k}</option>`;
+  });
+
+  const kategoriSelect = document.getElementById("kategoriFilter");
+  kategoriSelect.innerHTML = `<option value="">Semua Kategori</option>`;
+  const kategoriSet = new Set(pesertaData.map(p=>p.kategori_nama).filter(Boolean));
+  kategoriSet.forEach(k=>{
+    kategoriSelect.innerHTML += `<option value="${k}">${k}</option>`;
+  });
+}
+
+function renderTable(){
+  const tbody = document.getElementById("dataPeserta");
+  tbody.innerHTML = "";
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const kelasFilter = document.getElementById("kelasFilter").value;
+  const kategoriFilter = document.getElementById("kategoriFilter").value;
+
+  // 1. Filter peserta
+  const filtered = pesertaData.filter(p =>
+    (!kelasFilter || p.kelas_nama === kelasFilter) &&
+    (!kategoriFilter || p.kategori_nama === kategoriFilter) &&
+    (p.nama.toLowerCase().includes(search) || p.klub.toLowerCase().includes(search))
+  );
+
+  // 2. Kelompokkan dulu berdasarkan kategori + kelas
+  const grup = {};
+  filtered.forEach(p=>{
+    const key = (p.kategori_nama||"Tanpa Kategori")+"||"+(p.kelas_nama||"Tanpa Kelas");
+    if(!grup[key]) grup[key] = [];
+    grup[key].push(p);
+  });
+
+  // 3. Buat satu array "rows" siap render (header+peserta)
+  let rows = [];
+  let no = 1;
+  for(const g in grup){
+    const [kategoriNama,kelasNama] = g.split("||");
+    rows.push({header:true,kategoriNama,kelasNama});
+    grup[g].forEach(p=>{
+      rows.push({header:false,data:p,no:no++});
+    });
+  }
+
+  // 4. Pagination setelah rows jadi
+  const totalPages = Math.ceil(rows.length / perPage);
+  if (currentPage > totalPages) currentPage = 1;
+  const start = (currentPage - 1) * perPage;
+  const end = start + perPage;
+  const paginated = rows.slice(start,end);
+
+  // 5. Render rows
+  paginated.forEach(r=>{
+    if(r.header){
+      tbody.innerHTML += `<tr style="background:#f8f9fc">
+        <td colspan="12"><b>Kategori: ${r.kategoriNama} – Kelas: ${r.kelasNama}</b></td>
+      </tr>`;
+    } else {
+      const p = r.data;
+      const qr = p.qr_image ? `<img src="${BASE_URL}/uploads/${p.qr_image}" style="width:60px">` : "-";
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.no}</td>
+          <td>${p.no_partai||"-"}</td>
+          <td>${p.nama}</td>
+          <td>${p.klub}</td>
+          <td>${p.jenis_kelamin||"-"}</td>
+          <td>${p.kategori_nama || "-"}</td>
+          <td>${p.kelas_nama||"-"}</td>
+          <td>${p.tinggi_badan||"-"}</td>
+          <td>${p.berat_badan||"-"}</td>
+          <td>
+            <select class="status-select" data-uuid="${p.uuid}">
+              <option value="belum tanding" ${p.status === 'belum tanding' ? 'selected' : ''}>Belum Tanding</option>
+              <option value="sudah ada" ${p.status === 'sudah ada' ? 'selected' : ''}>Sudah Ada</option>
+              <option value="sudah tanding" ${p.status === 'sudah tanding' ? 'selected' : ''}>Sudah Tanding</option>
+            </select>
+          </td>
+          <td>${qr}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editPeserta('${p.uuid}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="hapusPeserta('${p.uuid}')">Hapus</button>
+          </td>
+        </tr>`;
+    }
+  });
+
+  // 6. Pagination buttons
+  const paginationContainer = document.getElementById("pagination");
+  paginationContainer.innerHTML = "";
+  if (totalPages > 1) {
+    for (let i = 1; i <= totalPages; i++) {
+      paginationContainer.innerHTML += `<button class="btn btn-sm ${i===currentPage?'btn-primary':'btn-light'} mx-1" onclick="changePage(${i})">${i}</button>`;
+    }
+  }
+}
+
+function changePage(page){
+  currentPage = page;
+  renderTable();
+}
+
+document.getElementById("searchInput").addEventListener("input",()=>{currentPage=1;renderTable();});
+document.getElementById("kelasFilter").addEventListener("change",()=>{currentPage=1;renderTable();});
+document.getElementById("kategoriFilter").addEventListener("change",()=>{currentPage=1;renderTable();});
+document.addEventListener('change', async (e) => {
+  if (e.target.classList.contains('status-select')) {
+    const uuid = e.target.dataset.uuid; 
+    const newStatus = e.target.value;
+    try {
+      const res = await fetch(`${API_URL}/${uuid}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      loadPeserta();
+    } catch (err) {
+      console.error(err);
+      alert('Gagal mengupdate status peserta');
+    }
+  }
+});
+
+// sisanya (formTambah, editPeserta, hapusPeserta) tetap sama seperti sebelumnya
+
+document.getElementById("formTambah").addEventListener("submit", async e => {
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  ["tinggi_badan","berat_badan","no_partai","kategori_id","kelas_id","umur"].forEach(k=>{
+    if(body[k]==="") body[k]=null; else body[k]=parseFloat(body[k]);
+  });
+  try {
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:getAuthHeaders(),
+      body:JSON.stringify(body)
+    });
+    if(!res.ok){
+      const txt = await res.text();
+      alert("Gagal simpan: "+txt);
+      return;
+    }
+    $('#tambahModal').modal('hide');
+    e.target.reset();
+    loadPeserta();
+  } catch(err){
+    alert("Gagal kirim data");
+    console.error(err);
+  }
+});
+
+async function editPeserta(uuid){
+  try {
+    const res = await fetch(`${API_URL}/${uuid}`);
+    if (!res.ok) throw new Error(await res.text());
+    const p = await res.json();
+    const f = document.getElementById("formEdit");
+    f.elements["uuid"].value = p.uuid;
+    f.elements["nama"].value = p.nama;
+    f.elements["klub"].value = p.klub;
+    f.elements["no_partai"].value = p.no_partai || "";
+    f.elements["jenis_kelamin"].value = p.jenis_kelamin || "";
+    f.elements["kategori_id"].value = p.kategori_id || "";
+    f.elements["kelas_id"].value = p.kelas_id || "";
+    f.elements["tinggi_badan"].value = p.tinggi_badan || "";
+    f.elements["berat_badan"].value = p.berat_badan || "";
+    $('#editModal').modal('show');
+  } catch (err){
+    console.error("Edit peserta gagal:",err);
+    alert("Gagal memuat data peserta");
+  }
+}
+
+document.getElementById("formEdit").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  const uuid = body.uuid; delete body.uuid;
+  ["tinggi_badan","berat_badan","no_partai","kategori_id","kelas_id","umur"].forEach(k=>{
+    if(body[k]==="") body[k]=null; else body[k]=parseFloat(body[k]);
+  });
+  await fetch(`${API_URL}/${uuid}`,{
+    method:"PUT",
+    headers:getAuthHeaders(),
+    body:JSON.stringify(body)
+  });
+  $('#editModal').modal('hide');
+  loadPeserta();
+});
+
+async function hapusPeserta(uuid) {
+  if (!confirm("Yakin hapus peserta ini?")) return;
+  try {
+    const res = await fetch(`${API_URL}/${uuid}`, { method: "DELETE", headers:getAuthHeaders() });
+    if (!res.ok) throw new Error(await res.text());
+    const result = await res.json();
+    alert(result.message || "Peserta terhapus");
+    loadPeserta();
+  } catch (err){
+    console.error("Hapus peserta gagal:", err);
+    alert("Gagal hapus peserta");
+  }
+}
+
+loadPeserta();
+</script>
+
+</body>
+</html>

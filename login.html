@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login Admin</title>
+
+  <!-- SB Admin 2 CSS -->
+  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class="bg-gradient-primary">
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-5 col-lg-6 col-md-8">
+        <div class="card o-hidden border-0 shadow-lg my-5">
+          <div class="card-body p-5">
+            <div class="text-center mb-4">
+              <h1 class="h4 text-gray-900">Login Admin</h1>
+            </div>
+
+            <form class="user" id="loginForm">
+              <div class="form-group">
+                <input type="text" class="form-control form-control-user"
+                  placeholder="Username" name="username" required>
+              </div>
+              <div class="form-group">
+                <input type="password" class="form-control form-control-user"
+                  placeholder="Password" name="password" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-user btn-block">
+                Login
+              </button>
+            </form>
+
+            <p id="errorMsg" class="text-danger text-center mt-3"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="js/sb-admin-2.min.js"></script>
+
+  <script type="module">
+    import {BASE_URL} from "./js/config.js";
+
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const username = this.username.value.trim();
+      const password = this.password.value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.textContent = "";
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/auth/login`,{  
+        method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Login gagal");
+
+        // Simpan token di localStorage
+        localStorage.setItem("token", data.token);
+        // Redirect ke dashboard
+        window.location.href = "index.html";
+      } catch (err) {
+        errorMsg.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

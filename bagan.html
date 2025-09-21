@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bagan Pertandingan - Kejuaraan Taekwondo</title>
+
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet">
+  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+
+  <style>
+    .match-card {
+      border: 2px solid #4e73df;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 30px;
+      background: #f8f9fc;
+    }
+    .match-header {
+      font-weight: bold;
+      color: #4e73df;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .bracket {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      overflow-x: auto;
+    }
+    .round {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+    .fighter-box {
+      min-width: 200px;
+      padding: 10px;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+      position: relative;
+    }
+    .vs-divider {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      margin: 6px 0;
+      color: #e74a3b;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body id="page-top">
+  <div id="wrapper">
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+        <div class="sidebar-brand-icon rotate-n-15">
+          <i class="fas fa-fist-raised"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Taekwondo</div>
+      </a>
+      <hr class="sidebar-divider my-0">
+      <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+      <li class="nav-item active"><a class="nav-link" href="bagan.html"><i class="fas fa-fw fa-sitemap"></i><span>Bagan Pertandingan</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="peserta.html"><i class="fas fa-fw fa-users"></i><span>Daftar Peserta</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="scan.html"><i class="fas fa-qrcode"></i><span>Scan QR</span></a></li>
+      <hr class="sidebar-divider d-none d-md-block">
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+    </ul>
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+          <h5 class="ml-2 my-auto">Kejuaraan Taekwondo</h5>          
+          <ul class="navbar-nav ml-auto">
+            <!-- User Info -->
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+              </a>
+              <div class="dropdown-menu dropdown-menu-right shadow">
+                <a class="dropdown-item" href="login.html">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout
+                </a>
+              </div>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="container-fluid">
+          <h1 class="h3 mb-4 text-gray-800">Bagan Pertandingan</h1>
+
+          <!-- 🔍 Search box -->
+          <div class="mb-3">
+            <input
+              type="text"
+              id="searchBagan"
+              class="form-control"
+              placeholder="Cari nama atau nomor partai..."
+            />
+          </div>
+
+          <!-- Tempat render bagan -->
+          <div id="baganList"></div>
+        </div>
+      </div>
+
+      <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>Copyright &copy; Kejuaraan Taekwondo 2025</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="js/sb-admin-2.min.js"></script>
+
+<script type="module">
+import {BASE_URL} from "./js/config.js"
+const API_URL = `${BASE_URL}/api/peserta/bracket`;
+const token = localStorage.getItem("token");
+let allPeserta = [];
+
+function statusPriority(status) {
+  if (status === "sudah ada") return 0;
+  if (status === "belum tanding") return 1;
+  if (status === "sudah tanding") return 2;
+  return 3;
+}
+function badgeClass(status) {
+  if (status === "belum tanding") return "bg-secondary text-white";
+  if (status === "sudah ada") return "bg-warning text-white";
+  if (status === "sudah tanding") return "bg-success text-white";
+  return "bg-light text-dark";
+}
+function chunkArray(arr, size) {
+  const res = [];
+  for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
+  return res;
+}
+
+async function loadBagan() {
+  try {
+    const res = await fetch(API_URL, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error("Gagal fetch");
+    allPeserta = await res.json();
+    renderBagan();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function renderBagan() {
+  const search = document.getElementById("searchBagan").value.toLowerCase();
+  const peserta = allPeserta.filter(p =>
+    p.nama.toLowerCase().includes(search) ||
+    (p.no_partai && p.no_partai.toString().includes(search))
+  );
+
+  const container = document.getElementById("baganList");
+  container.innerHTML = "";
+
+  const partaiGroups = {};
+  peserta.forEach(p => {
+    const no = p.no_partai ? Number(p.no_partai) : 0;
+    if (!partaiGroups[no]) partaiGroups[no] = [];
+    partaiGroups[no].push(p);
+  });
+
+  Object.keys(partaiGroups)
+    .map(n => parseInt(n, 10))
+    .sort((a, b) => a - b)
+    .forEach(no => {
+      const pesertas = partaiGroups[no]
+        .filter(p => p.status !== "sudah tanding")
+        .sort((a, b) => statusPriority(a.status) - statusPriority(b.status));
+
+      let roundsHTML = "";
+
+      if (pesertas.length === 1) {
+        const f = pesertas[0];
+        roundsHTML = `
+          <div class="round">
+            <div class="fighter-box">
+              ${f.nama}<br>
+              (${f.tinggi_badan || "-"}cm, ${f.berat_badan || "-"}kg)<br>
+              ${f.klub}
+              <span class="badge ${badgeClass(f.status)}">${f.status}</span>
+            </div>
+          </div>`;
+      } else {
+        const pairs = chunkArray(pesertas, 2);
+        roundsHTML = pairs.map(match => {
+          const f1 = match[0];
+          const f2 = match[1];
+          return `
+            <div class="round">
+              <div class="fighter-box">
+                ${f1.nama}<br>(${f1.tinggi_badan || "-"}cm, ${f1.berat_badan || "-"}kg)<br>${f1.klub}
+                <span class="badge ${badgeClass(f1.status)}">${f1.status}</span>
+              </div>
+              ${
+                f2
+                  ? `<div class="vs-divider">VS</div>
+                     <div class="fighter-box">
+                       ${f2.nama}<br>(${f2.tinggi_badan || "-"}cm, ${f2.berat_badan || "-"}kg)<br>${f2.klub}
+                       <span class="badge ${badgeClass(f2.status)}">${f2.status}</span>
+                     </div>`
+                  : ""
+              }
+            </div>`;
+        }).join("");
+      }
+
+      const first = partaiGroups[no][0];
+      const kategori = first.kategori_nama || `Kategori ${first.kategori_id || "-"}`;
+      const kelas = first.kelas_nama || `Kelas ${first.kelas_id || "-"}`;
+      const gender = first.jenis_kelamin || "-";
+
+      container.innerHTML += `
+        <div class="match-card">
+          <div class="match-header">
+            Partai ${no} ${kategori} ${kelas} (${gender})
+          </div>
+          <div class="bracket">${roundsHTML}</div>
+        </div>`;
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("searchBagan").addEventListener("input", renderBagan);
+  loadBagan();
+});
+</script>
+
+</body>
+</html>
