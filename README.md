@@ -1,9 +1,3 @@
-Berikut contoh **README.md** yang cocok untuk proyek kamu (frontend turnamen Taekwondo).
-Kamu bisa menyesuaikan nama repo, link backend, dan cara instalasi sesuai kebutuhan 👇
-
----
-
-```markdown
 # Taekwondo Tournament Frontend
 
 Frontend aplikasi manajemen turnamen Taekwondo.  
