@@ -118,6 +118,12 @@
             />
           </div>
 
+          <!-- 🔘 Tombol kategori -->
+          <div class="mb-3">
+            <button class="btn btn-primary mx-1 kategori-btn" id="btnPrakadet">Bagan Prakadet</button>
+            <button class="btn btn-secondary mx-1 kategori-btn" id="btnKadet">Bagan Kadet</button>
+          </div>
+
           <!-- Tempat render bagan -->
           <div id="baganList"></div>
         </div>
@@ -139,23 +145,26 @@
   <script src="js/sb-admin-2.min.js"></script>
 
 <script type="module">
-import {BASE_URL} from "./js/config.js"
+import { BASE_URL } from "./js/config.js"
 const API_URL = `${BASE_URL}/api/peserta/bracket`;
 const token = localStorage.getItem("token");
 let allPeserta = [];
+let currentKategori = "Pra-kadet";
 
 function statusPriority(status) {
-  if (status === "sudah ada") return 0;
+  if (status === "siap tanding") return 0;
   if (status === "belum tanding") return 1;
   if (status === "sudah tanding") return 2;
   return 3;
 }
+
 function badgeClass(status) {
   if (status === "belum tanding") return "bg-secondary text-white";
-  if (status === "sudah ada") return "bg-warning text-white";
+  if (status === "siap tanding") return "bg-warning text-white";
   if (status === "sudah tanding") return "bg-success text-white";
   return "bg-light text-dark";
 }
+
 function chunkArray(arr, size) {
   const res = [];
   for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
@@ -173,15 +182,9 @@ async function loadBagan() {
   }
 }
 
-function renderBagan() {
-  const search = document.getElementById("searchBagan").value.toLowerCase();
-  const peserta = allPeserta.filter(p =>
-    p.nama.toLowerCase().includes(search) ||
-    (p.no_partai && p.no_partai.toString().includes(search))
-  );
-
-  const container = document.getElementById("baganList");
-  container.innerHTML = "";
+function renderKategori(peserta, containerId, title) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<h4 class="mb-3 text-primary">${title}</h4>`;
 
   const partaiGroups = {};
   peserta.forEach(p => {
@@ -236,25 +239,61 @@ function renderBagan() {
       }
 
       const first = partaiGroups[no][0];
-      const kategori = first.kategori_nama || `Kategori ${first.kategori_id || "-"}`;
       const kelas = first.kelas_nama || `Kelas ${first.kelas_id || "-"}`;
       const gender = first.jenis_kelamin || "-";
 
       container.innerHTML += `
         <div class="match-card">
           <div class="match-header">
-            Partai ${no} ${kategori} ${kelas} (${gender})
+            Partai ${no} ${kelas} (${gender})
           </div>
           <div class="bracket">${roundsHTML}</div>
         </div>`;
     });
 }
 
+function renderBagan() {
+  const container = document.getElementById("baganList");
+  container.innerHTML = "";
+
+  // filter by kategori
+  const filteredPeserta = allPeserta.filter(p =>
+    (p.kategori_nama || "").toLowerCase().includes(currentKategori.toLowerCase())
+  );
+
+  if (filteredPeserta.length === 0) {
+    container.innerHTML = `<p class="text-muted">Tidak ada peserta untuk kategori ini.</p>`;
+    return;
+  }
+
+  renderKategori(filteredPeserta, "baganList", currentKategori);
+}
+
+function setKategori(kategori, e) {
+  currentKategori = kategori;
+
+  // reset warna tombol
+  document.querySelectorAll(".kategori-btn").forEach(btn => {
+    btn.classList.remove("btn-primary");
+    btn.classList.add("btn-secondary");
+  });
+
+  // aktifkan tombol yang diklik
+  e.target.classList.remove("btn-secondary");
+  e.target.classList.add("btn-primary");
+
+  renderBagan();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("searchBagan").addEventListener("input", renderBagan);
+  // tombol kategori
+  document.getElementById("btnPrakadet").addEventListener("click", (e) => setKategori("Pra-kadet", e));
+  document.getElementById("btnKadet").addEventListener("click", (e) => setKategori("Kadet", e));
+
   loadBagan();
 });
 </script>
+
 
 </body>
 </html>
